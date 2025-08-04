@@ -11,26 +11,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clone All Repos into Common Folder
+      - name: Set up Project Folder Structure
         run: |
-          mkdir -p ${{ runner.temp }}/workspace
-          cd ${{ runner.temp }}/workspace
+          mkdir -p $GITHUB_WORKSPACE/common
+          cd $GITHUB_WORKSPACE/common
           git clone https://github.com/horlas08/react-native-gsm-sip-gateway.git telon-gateway-app
           git clone https://github.com/horlas08/react-native-tele.git
           git clone https://github.com/horlas08/react-native-sip2.git
           git clone https://github.com/horlas08/react-native-replace-dialer.git
 
-      - name: Setup Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 12
 
-      - name: Install JDK 8
+      - name: Install OpenJDK 8
         run: |
           sudo apt update
           sudo apt install -y openjdk-8-jdk
 
-      - name: Setup Android SDK
+      - name: Set up Android SDK
         uses: android-actions/setup-android@v2
         with:
           api-level: 29
@@ -39,17 +39,17 @@ jobs:
       - name: Cache Node Modules
         uses: actions/cache@v4
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          path: $GITHUB_WORKSPACE/common/telon-gateway-app/node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-modules-
 
-      - name: Install Dependencies
-        working-directory: ${{ runner.temp }}/workspace/telon-gateway-app
+      - name: Install JS Dependencies
+        working-directory: ${{ github.workspace }}/common/telon-gateway-app
         run: yarn install
 
       - name: Build Debug APK
-        working-directory: ${{ runner.temp }}/workspace/telon-gateway-app/android
+        working-directory: ${{ github.workspace }}/common/telon-gateway-app/android
         run: |
           chmod +x gradlew
           ./gradlew clean
@@ -59,4 +59,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: debug-apk
-          path: ${{ runner.temp }}/workspace/telon-gateway-app/android/app/build/outputs/apk/debug/app-debug.apk
+          path: ${{ github.workspace }}/common/telon-gateway-app/android/app/build/outputs/apk/debug/app-debug.apk
