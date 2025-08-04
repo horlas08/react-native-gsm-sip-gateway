@@ -35,7 +35,6 @@ jobs:
         with:
           api-level: 29
           build-tools: 29.0.3
-          ndk: false
 
       - name: Install Dependencies
         run: yarn install
@@ -48,7 +47,7 @@ jobs:
           ./gradlew assembleDebug
 
       - name: Upload Debug APK
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
