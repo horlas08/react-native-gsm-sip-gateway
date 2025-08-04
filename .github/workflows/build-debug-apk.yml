@@ -1,3 +1,4 @@
+
 name: Build Debug APK
 
 on:
@@ -37,38 +38,38 @@ jobs:
           api-level: 29
           build-tools: 29.0.3
 
-      - name: Clean lockfile and node_modules
+      - name: Download and Setup NDK r17b
+        run: |
+          curl -o android-ndk-r17b-linux-x86_64.zip https://dl.google.com/android/repository/android-ndk-r17b-linux-x86_64.zip
+          unzip android-ndk-r17b-linux-x86_64.zip -d $HOME/android-ndk
+          rm android-ndk-r17b-linux-x86_64.zip
+          echo "NDK_HOME=$HOME/android-ndk/android-ndk-r17b" >> $GITHUB_ENV
+          echo "ANDROID_NDK_HOME=$HOME/android-ndk/android-ndk-r17b" >> $GITHUB_ENV
+          echo "ndk.dir=$HOME/android-ndk/android-ndk-r17b" > $GITHUB_WORKSPACE/telon-gateway-app/android/local.properties
+
+      - name: Install Dependencies
         working-directory: ${{ github.workspace }}/telon-gateway-app
         run: |
           rm -f package-lock.json
           rm -rf node_modules
-          yarn cache clean
+          yarn install
 
-      - name: Cache Node Modules
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}/telon-gateway-app/node_modules
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-modules-
-
-      - name: Install Dependencies
+      - name: Bundle JavaScript for Android
         working-directory: ${{ github.workspace }}/telon-gateway-app
-        run: yarn install
+        run: |
+          mkdir -p android/app/build/intermediates/assets/debug/
+          npx react-native bundle --platform android --dev false \
+            --entry-file index.js \
+            --bundle-output android/app/build/intermediates/assets/debug/index.android.bundle \
+            --assets-dest android/app/build/intermediates/res/merged/debug
 
       - name: Build Debug APK
         working-directory: ${{ github.workspace }}/telon-gateway-app/android
         run: |
           echo "📁 Current working directory: $(pwd)"
-          echo "📄 Listing android/ contents:"
           ls -la
-          echo "🔧 Making gradlew executable..."
           chmod +x gradlew
-          echo "✅ gradlew permission set"
-          ls -l gradlew
-          echo "🧹 Cleaning project..."
           ./gradlew clean
-          echo "🛠️ Building debug APK..."
           ./gradlew assembleDebug
 
       - name: Upload Debug APK
