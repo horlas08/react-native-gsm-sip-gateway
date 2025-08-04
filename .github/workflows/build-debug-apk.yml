@@ -16,9 +16,9 @@ jobs:
 
       - name: Clone Local Dependencies
         run: |
-          git clone https://github.com/horlas08/react-native-tele.git ../react-native-tele
-          git clone https://github.com/horlas08/react-native-sip2.git ../react-native-sip2
-          git clone https://github.com/horlas08/react-native-replace-dialer.git ../react-native-replace-dialer
+          git clone https://github.com/telon-org/react-native-tele.git ../react-native-tele
+          git clone https://github.com/telon-org/react-native-sip2.git ../react-native-sip2
+          git clone https://github.com/telon-org/react-native-replace-dialer.git ../react-native-replace-dialer
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
