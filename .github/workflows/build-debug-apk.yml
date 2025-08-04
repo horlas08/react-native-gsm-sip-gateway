@@ -11,12 +11,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Main Repository (telon-gateway-app)
+      - name: Checkout Main Repository
         uses: actions/checkout@v4
 
-      - name: Clone Required Libraries as Siblings
+      - name: Clone Required Libraries as Siblings to telon-gateway-app
         run: |
-          cd $GITHUB_WORKSPACE/..
+          cd $GITHUB_WORKSPACE/telon-gateway-app/..
           git clone https://github.com/horlas08/react-native-tele.git
           git clone https://github.com/horlas08/react-native-sip2.git
           git clone https://github.com/horlas08/react-native-replace-dialer.git
@@ -40,17 +40,30 @@ jobs:
       - name: Cache Node Modules
         uses: actions/cache@v4
         with:
-          path: node_modules
+          path: ${{ github.workspace }}/telon-gateway-app/node_modules
           key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-modules-
 
       - name: Install Dependencies
+        working-directory: ${{ github.workspace }}/telon-gateway-app
         run: yarn install
 
-      - name: Build Debug APK
-        working-directory: android
+      - name: 🔍 Debug: Print directory structure
         run: |
+          echo "Current directory: $(pwd)"
+          ls -la
+          echo "Inside telon-gateway-app:"
+          ls -la $GITHUB_WORKSPACE/telon-gateway-app
+          echo "Inside android:"
+          ls -la $GITHUB_WORKSPACE/telon-gateway-app/android
+
+      - name: Build Debug APK
+        working-directory: ${{ github.workspace }}/telon-gateway-app/android
+        run: |
+          echo "📁 Current working directory: $(pwd)"
+          echo "📄 Listing android/ contents:"
+          ls -la
           chmod +x gradlew
           ./gradlew clean
           ./gradlew assembleDebug
@@ -59,4 +72,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: ${{ github.workspace }}/telon-gateway-app/android/app/build/outputs/apk/debug/app-debug.apk
