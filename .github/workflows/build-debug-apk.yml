@@ -11,10 +11,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clone All Repos into GitHub Workspace
+      - name: Checkout Main Repository (telon-gateway-app)
+        uses: actions/checkout@v4
+
+      - name: Clone Required Libraries as Siblings
         run: |
-          cd $GITHUB_WORKSPACE
-          git clone https://github.com/horlas08/react-native-gsm-sip-gateway.git telon-gateway-app
+          cd $GITHUB_WORKSPACE/..
           git clone https://github.com/horlas08/react-native-tele.git
           git clone https://github.com/horlas08/react-native-sip2.git
           git clone https://github.com/horlas08/react-native-replace-dialer.git
@@ -38,17 +40,16 @@ jobs:
       - name: Cache Node Modules
         uses: actions/cache@v4
         with:
-          path: ${{ github.workspace }}/telon-gateway-app/node_modules
+          path: node_modules
           key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-modules-
 
       - name: Install Dependencies
-        working-directory: ${{ github.workspace }}/telon-gateway-app
         run: yarn install
 
       - name: Build Debug APK
-        working-directory: ${{ github.workspace }}/telon-gateway-app/android
+        working-directory: android
         run: |
           chmod +x gradlew
           ./gradlew clean
@@ -58,4 +59,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: debug-apk
-          path: ${{ github.workspace }}/telon-gateway-app/android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
