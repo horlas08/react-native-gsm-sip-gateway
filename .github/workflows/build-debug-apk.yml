@@ -54,15 +54,6 @@ jobs:
           rm -rf node_modules
           yarn install
 
-      - name: Bundle JavaScript for Android
-        working-directory: ${{ github.workspace }}/telon-gateway-app
-        run: |
-          mkdir -p android/app/build/intermediates/assets/debug/
-          npx react-native bundle --platform android --dev false \
-            --entry-file index.js \
-            --bundle-output android/app/build/intermediates/assets/debug/index.android.bundle \
-            --assets-dest android/app/build/intermediates/res/merged/debug
-
       - name: Build Debug APK
         working-directory: ${{ github.workspace }}/telon-gateway-app/android
         run: |
