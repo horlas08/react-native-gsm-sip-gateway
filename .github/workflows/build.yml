@@ -1,0 +1,58 @@
+name: Build Signed APK
+
+on:
+  push:
+    branches:
+      - "**"
+  workflow_dispatch:
+
+jobs:
+  build_apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Main Repository
+        uses: actions/checkout@v2
+
+      - name: Clone Local Dependencies
+        run: |
+          git clone https://github.com/horlas08/react-native-tele.git ../react-native-tele
+          git clone https://github.com/horlas08/react-native-sip2.git ../react-native-sip2
+          git clone https://github.com/horlas08/react-native-replace-dialer.git ../react-native-replace-dialer
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12
+
+      - name: Setup JDK 8
+        run: |
+          sudo apt update
+          sudo apt install -y openjdk-8-jdk
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 29
+          build-tools: 29.0.3
+          ndk: false
+
+      - name: Install Dependencies
+        run: yarn install
+
+      - name: Decode and Add release.keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > ../release.keystore
+
+      - name: Build Signed APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew clean
+          ./gradlew assembleRelease
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: signed-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
