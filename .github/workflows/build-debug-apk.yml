@@ -37,11 +37,18 @@ jobs:
           api-level: 29
           build-tools: 29.0.3
 
+      - name: Clean lockfile and node_modules
+        working-directory: ${{ github.workspace }}/telon-gateway-app
+        run: |
+          rm -f package-lock.json
+          rm -rf node_modules
+          yarn cache clean
+
       - name: Cache Node Modules
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/telon-gateway-app/node_modules
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-modules-
 
@@ -55,15 +62,12 @@ jobs:
           echo "📁 Current working directory: $(pwd)"
           echo "📄 Listing android/ contents:"
           ls -la
-
           echo "🔧 Making gradlew executable..."
           chmod +x gradlew
           echo "✅ gradlew permission set"
           ls -l gradlew
-
           echo "🧹 Cleaning project..."
           ./gradlew clean
-
           echo "🛠️ Building debug APK..."
           ./gradlew assembleDebug
 
