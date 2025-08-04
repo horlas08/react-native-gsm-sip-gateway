@@ -49,23 +49,22 @@ jobs:
         working-directory: ${{ github.workspace }}/telon-gateway-app
         run: yarn install
 
-      - name: 🔍 Debug: Print directory structure
-        run: |
-          echo "Current directory: $(pwd)"
-          ls -la
-          echo "Inside telon-gateway-app:"
-          ls -la $GITHUB_WORKSPACE/telon-gateway-app
-          echo "Inside android:"
-          ls -la $GITHUB_WORKSPACE/telon-gateway-app/android
-
       - name: Build Debug APK
         working-directory: ${{ github.workspace }}/telon-gateway-app/android
         run: |
           echo "📁 Current working directory: $(pwd)"
           echo "📄 Listing android/ contents:"
           ls -la
+
+          echo "🔧 Making gradlew executable..."
           chmod +x gradlew
+          echo "✅ gradlew permission set"
+          ls -l gradlew
+
+          echo "🧹 Cleaning project..."
           ./gradlew clean
+
+          echo "🛠️ Building debug APK..."
           ./gradlew assembleDebug
 
       - name: Upload Debug APK
